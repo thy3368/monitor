@@ -224,51 +224,363 @@ public class CommonMonitor implements Monitor {
 }
 ```
 
-#### Monitor 使用示例
+#### Monitor 使用示例 (MonitorProcess)
+
+`MonitorProcess` 是监控系统的核心入口点，负责协调获取监控配置和执行监控任务。以下是详细的使用示例：
+
+##### 基本使用
 
 ```java
 public class MonitorProcess {
 
     private MonitorRepo monitorRepo;
+    private MonitorMetaRepo monitorMetaRepo;
 
     public void handle(String monitorId) {
-        // 1. 根据 ID 获取 Monitor 实现
-        Monitor monitor = monitorRepo.queryById(monitorId);
+        // 1. 根据监控ID获取监控元数据
+        MonitorMeta meta = monitorMetaRepo.queryById(monitorId);
 
-        // 2. 构建元数据
-        MonitorMeta meta = buildMonitorMeta();
+        // 2. 根据元数据中的监控实现ID获取Monitor实例
+        Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
 
-        // 3. 执行监控
+        // 3. 执行监控任务
         monitor.execution(meta);
     }
 
-    private MonitorMeta buildMonitorMeta() {
-        MonitorMeta meta = new MonitorMeta();
-
-        // 配置通道元数据
-        ChannelMeta channelMeta = new ChannelMeta();
-        channelMeta.setChannelId("esb_channel");
-        channelMeta.setChannelVersion("1.0");
-        meta.setChannelMeta(channelMeta);
-
-        // 配置命令元数据
-        CommandMeta commandMeta = new CommandMeta();
-        commandMeta.setCommand("query_status");
-        meta.setCommandMeta(commandMeta);
-
-        // 配置计算器元数据
-        MeterCalculatorMeta calculatorMeta = new MeterCalculatorMeta();
-        calculatorMeta.setCalculatorId("default_calculator");
-        meta.setMeterCalculatorMeta(calculatorMeta);
-
-        return meta;
-    }
-
     void test() {
-        handle("user1");
+        handle("esb_moni");
     }
 }
 ```
+
+##### 高级示例 1: 系统性能监控
+
+```java
+public class SystemPerformanceMonitorProcess {
+
+    private MonitorRepo monitorRepo;
+    private MonitorMetaRepo monitorMetaRepo;
+
+    /**
+     * 执行系统性能监控
+     * - 监控项: CPU使用率、内存占用、磁盘空间
+     * - 通道: SSH远程执行
+     * - 告警: 超过阈值时发送告警
+     */
+    public void executeSystemMonitor(String serverHostname) {
+        // 1. 获取系统监控元数据配置
+        MonitorMeta meta = monitorMetaRepo.queryById("system_performance");
+
+        // 2. 配置特定的服务器连接信息
+        ChannelMeta channelMeta = meta.getChannelMeta();
+        channelMeta.getExtensions().put("host", serverHostname);
+        channelMeta.getExtensions().put("port", 22);
+        channelMeta.getExtensions().put("timeout", 30000);  // 30秒超时
+
+        // 3. 获取系统性能监控器
+        Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
+
+        // 4. 执行监控
+        monitor.execution(meta);
+    }
+
+    void test() {
+        // 监控多个服务器
+        executeSystemMonitor("prod-server-01");
+        executeSystemMonitor("prod-server-02");
+        executeSystemMonitor("prod-server-03");
+    }
+}
+```
+
+##### 高级示例 2: 应用程序日志监控
+
+```java
+public class ApplicationLogMonitorProcess {
+
+    private MonitorRepo monitorRepo;
+    private MonitorMetaRepo monitorMetaRepo;
+
+    /**
+     * 执行应用日志监控
+     * - 通道: FTP获取远程日志文件
+     * - 解析: 提取错误和警告信息
+     * - 告警: 错误数超过阈值时触发告警
+     */
+    public void executeLogMonitor(String appName, String environment) {
+        // 1. 获取日志监控配置
+        String monitorMetaId = String.format("log_monitor_%s_%s", appName, environment);
+        MonitorMeta meta = monitorMetaRepo.queryById(monitorMetaId);
+
+        // 2. 配置FTP通道参数
+        ChannelMeta channelMeta = meta.getChannelMeta();
+        channelMeta.setChannelId("ftp_channel");
+        channelMeta.getExtensions().put("host", "log-server.company.com");
+        channelMeta.getExtensions().put("port", 21);
+        channelMeta.getExtensions().put("username", "logftp");
+
+        // 3. 配置日志路径命令
+        CommandMeta commandMeta = meta.getCommandMeta();
+        commandMeta.setCommand(String.format("/logs/%s/application.log", appName));
+        commandMeta.getExtensions().put("timeout", 60000);  // 1分钟超时
+        commandMeta.getExtensions().put("bufferSize", 1048576);  // 1MB缓冲
+
+        // 4. 配置日志解析计算器
+        MeterCalculatorMeta calculatorMeta = meta.getMeterCalculatorMeta();
+        calculatorMeta.setCalculatorId("log_parser");
+        calculatorMeta.getExtensions().put("pattern", "ERROR|WARN");
+        calculatorMeta.getExtensions().put("aggregationWindow", 300000);  // 5分钟窗口
+
+        // 5. 执行监控
+        Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
+        monitor.execution(meta);
+    }
+
+    void test() {
+        executeLogMonitor("payment-service", "production");
+        executeLogMonitor("notification-service", "staging");
+    }
+}
+```
+
+##### 高级示例 3: 数据库性能监控（带重试机制）
+
+```java
+public class DatabasePerformanceMonitorProcess {
+
+    private MonitorRepo monitorRepo;
+    private MonitorMetaRepo monitorMetaRepo;
+    private static final int MAX_RETRIES = 3;
+    private static final long RETRY_DELAY_MS = 5000;  // 5秒
+
+    /**
+     * 执行数据库性能监控（带重试）
+     * - 监控项: 查询响应时间、连接池使用率、慢查询日志
+     * - 通道: SSH执行数据库查询脚本
+     * - 重试: 失败自动重试3次
+     */
+    public void executeDatabaseMonitor(String databaseName) {
+        int retries = 0;
+        MonitorException lastException = null;
+
+        while (retries < MAX_RETRIES) {
+            try {
+                // 1. 获取数据库监控配置
+                MonitorMeta meta = monitorMetaRepo.queryById("db_performance");
+
+                // 2. 配置SSH连接到数据库服务器
+                ChannelMeta channelMeta = meta.getChannelMeta();
+                channelMeta.setChannelId("ssh_channel");
+                channelMeta.getExtensions().put("host", "db-server.company.com");
+
+                // 3. 配置数据库查询命令
+                CommandMeta commandMeta = meta.getCommandMeta();
+                commandMeta.setCommand(String.format(
+                    "mysql -u monitor_user -p password -e 'SHOW STATUS LIKE \"Threads%\"' %s",
+                    databaseName
+                ));
+                commandMeta.getExtensions().put("timeout", 20000);
+
+                // 4. 配置性能计算器
+                MeterCalculatorMeta calculatorMeta = meta.getMeterCalculatorMeta();
+                calculatorMeta.setCalculatorId("db_performance_calculator");
+                calculatorMeta.getExtensions().put("threshold", 1000);  // 查询时间阈值(ms)
+
+                // 5. 执行监控
+                Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
+                monitor.execution(meta);
+
+                System.out.println("数据库监控成功: " + databaseName);
+                return;  // 成功则返回
+
+            } catch (MonitorException e) {
+                lastException = e;
+                retries++;
+
+                if (retries < MAX_RETRIES) {
+                    System.out.println(String.format(
+                        "数据库监控失败 (重试 %d/%d), %d秒后重试...",
+                        retries, MAX_RETRIES, RETRY_DELAY_MS / 1000
+                    ));
+                    try {
+                        Thread.sleep(RETRY_DELAY_MS);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 3次重试全部失败，抛出异常
+        System.err.println("数据库监控失败: " + databaseName + ", 已重试" + MAX_RETRIES + "次");
+        throw new RuntimeException("监控失败", lastException);
+    }
+
+    void test() {
+        executeDatabaseMonitor("prod_database");
+    }
+}
+```
+
+##### 高级示例 4: 批量监控执行（并发处理）
+
+```java
+public class BatchMonitorProcess {
+
+    private MonitorRepo monitorRepo;
+    private MonitorMetaRepo monitorMetaRepo;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
+
+    /**
+     * 批量执行多个监控任务
+     * - 支持并发执行多个监控
+     * - 自动处理资源清理
+     */
+    public void executeBatchMonitors(List<String> monitorIds) {
+        List<Future<?>> futures = new ArrayList<>();
+
+        // 提交所有监控任务
+        for (String monitorId : monitorIds) {
+            Future<?> future = executorService.submit(() -> {
+                try {
+                    executeSingleMonitor(monitorId);
+                } catch (Exception e) {
+                    System.err.println("监控执行失败: " + monitorId + ", 错误: " + e.getMessage());
+                }
+            });
+            futures.add(future);
+        }
+
+        // 等待所有任务完成
+        for (Future<?> future : futures) {
+            try {
+                future.get(60, TimeUnit.SECONDS);  // 60秒超时
+            } catch (TimeoutException e) {
+                System.err.println("监控执行超时");
+                future.cancel(true);
+            } catch (Exception e) {
+                System.err.println("监控执行异常: " + e.getMessage());
+            }
+        }
+    }
+
+    private void executeSingleMonitor(String monitorId) {
+        MonitorMeta meta = monitorMetaRepo.queryById(monitorId);
+        Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
+        monitor.execution(meta);
+    }
+
+    public void shutdownExecutor() {
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    void test() {
+        List<String> monitorIds = Arrays.asList(
+            "system_performance",
+            "log_monitor_payment_prod",
+            "db_performance",
+            "network_monitoring"
+        );
+
+        executeBatchMonitors(monitorIds);
+        shutdownExecutor();
+    }
+}
+```
+
+##### 高级示例 5: 动态配置监控
+
+```java
+public class DynamicMonitorProcess {
+
+    private MonitorRepo monitorRepo;
+    private MonitorMetaRepo monitorMetaRepo;
+
+    /**
+     * 动态构建和执行监控配置
+     * - 无需预定义配置
+     * - 灵活组合通道、命令、计算器
+     */
+    public void executeCustomMonitor(MonitorConfig config) {
+        // 1. 构建监控元数据
+        MonitorMeta meta = new MonitorMeta();
+
+        // 2. 配置通道
+        ChannelMeta channelMeta = new ChannelMeta();
+        channelMeta.setChannelId(config.getChannelType());
+        channelMeta.setChannelVersion(config.getChannelVersion());
+        channelMeta.setExtensions(config.getChannelConfig());
+        meta.setChannelMeta(channelMeta);
+
+        // 3. 配置命令
+        CommandMeta commandMeta = new CommandMeta();
+        commandMeta.setCommand(config.getCommand());
+        commandMeta.setExtensions(config.getCommandConfig());
+        meta.setCommandMeta(commandMeta);
+
+        // 4. 配置计算器
+        MeterCalculatorMeta calculatorMeta = new MeterCalculatorMeta();
+        calculatorMeta.setCalculatorId(config.getCalculatorId());
+        calculatorMeta.setExtensions(config.getCalculatorConfig());
+        meta.setMeterCalculatorMeta(calculatorMeta);
+
+        // 5. 获取监控器并执行
+        Monitor monitor = monitorRepo.queryById(config.getMonitorType());
+        monitor.execution(meta);
+    }
+
+    // 监控配置类
+    public static class MonitorConfig {
+        private String monitorType;       // 监控类型: CommonMonitor, EsbMonitor 等
+        private String channelType;       // 通道类型: ssh_channel, ftp_channel 等
+        private String channelVersion;    // 通道版本
+        private Map<String, Object> channelConfig;    // 通道配置
+        private String command;           // 执行的命令
+        private Map<String, Object> commandConfig;    // 命令配置
+        private String calculatorId;      // 计算器ID
+        private Map<String, Object> calculatorConfig; // 计算器配置
+
+        // getter/setter 省略...
+    }
+
+    void test() {
+        // 构建自定义监控配置
+        MonitorConfig config = new MonitorConfig();
+        config.setMonitorType("CommonMonitor");
+        config.setChannelType("ssh_channel");
+        config.setChannelVersion("1.0");
+        config.setChannelConfig(Map.of(
+            "host", "custom-server.com",
+            "port", 22,
+            "username", "admin"
+        ));
+        config.setCommand("df -h");
+        config.setCommandConfig(Map.of("timeout", 10000));
+        config.setCalculatorId("disk_usage_calculator");
+        config.setCalculatorConfig(Map.of("threshold", 80));
+
+        executeCustomMonitor(config);
+    }
+}
+```
+
+##### MonitorProcess 最佳实践
+
+1. **错误处理**: 总是为监控执行添加异常处理机制
+2. **重试策略**: 对于网络相关的操作，实现指数退避重试
+3. **资源管理**: 确保连接正确关闭，使用try-with-resources模式
+4. **并发控制**: 使用线程池管理多个并发监控任务
+5. **性能优化**: 缓存常用的Monitor和MonitorMeta实例
+6. **日志记录**: 记录监控执行的关键步骤用于调试和审计
 
 ### MonitorChannel (监控通道)
 
