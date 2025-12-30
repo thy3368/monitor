@@ -26,12 +26,12 @@ public class CommonMonitor implements Monitor {
 
     public void execution() {
 
-        MonitorMeta esbMonitorMeta = abc();
+        MonitorMeta esbMonitorMeta = esbMonitorMeta();
         execution(esbMonitorMeta);
 
     }
 
-    private MonitorMeta abc() {
+    private MonitorMeta esbMonitorMeta() {
 
         MonitorMeta esbMonitorMeta = new MonitorMeta();
 
