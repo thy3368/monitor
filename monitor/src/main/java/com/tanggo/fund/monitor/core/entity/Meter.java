@@ -1,0 +1,4 @@
+package com.tanggo.fund.monitor.core.entity;
+
+public class Meter {
+}
