@@ -166,8 +166,8 @@ public class EsbMonitor implements Monitor {
         String content = monitorChannel.execute("cmd");
 
         // 2. 获取计算器并解析数据
-        MonitorCalculator monitorCalculator = monitorCalculatorRepo.queryById("calculator");
-        Meter meter = monitorCalculator.calculat(content);
+        MonitorCalculator meterCalculator = monitorCalculatorRepo.queryById("calculator");
+        Meter meter = meterCalculator.calculat(content);
 
         // 3. 处理告警并执行动作
         Action action = warningProcessRepo.handle(meter);

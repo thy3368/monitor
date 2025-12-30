@@ -1,8 +1,7 @@
 package com.tanggo.fund.monitor.core.entity;
 
 public interface ActionHandle {
-    static void execute() {
-    }
+    void execute();
 
     String getId();
 }

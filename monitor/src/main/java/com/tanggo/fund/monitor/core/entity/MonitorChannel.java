@@ -1,7 +1,10 @@
 package com.tanggo.fund.monitor.core.entity;
 
-public interface MonitorChannel {
-    void connect();
+import com.tanggo.fund.monitor.core.entity.meta.ChannelMeta;
+import com.tanggo.fund.monitor.core.entity.meta.CommandMeta;
 
-    String execute(String cmd);
+public interface MonitorChannel {
+    void connect(ChannelMeta channelMeta);
+
+    String execute(CommandMeta cmd);
 }

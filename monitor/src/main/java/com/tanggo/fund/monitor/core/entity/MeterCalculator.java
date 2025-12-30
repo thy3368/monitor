@@ -1,5 +1,5 @@
 package com.tanggo.fund.monitor.core.entity;
 
-public interface MonitorCalculator {
+public interface MeterCalculator {
     Meter calculat(String content);
 }

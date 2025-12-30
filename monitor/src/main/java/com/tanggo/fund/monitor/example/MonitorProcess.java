@@ -11,9 +11,7 @@ public class MonitorProcess {
 
     public void handle(String monitorId) {
 
-
         Monitor monitor = monitorRepo.queryById(monitorId);
-
 
         monitor.execution();
 
