@@ -1,6 +1,7 @@
 package com.tanggo.fund.monitor.example;
 
 import com.tanggo.fund.monitor.core.entity.Monitor;
+import com.tanggo.fund.monitor.core.entity.meta.MonitorMeta;
 import com.tanggo.fund.monitor.core.repo.MonitorRepo;
 
 public class MonitorProcess {
@@ -13,7 +14,8 @@ public class MonitorProcess {
 
         Monitor monitor = monitorRepo.queryById(monitorId);
 
-        monitor.execution();
+        MonitorMeta meta = null;
+        monitor.execution(meta);
 
 
     }
