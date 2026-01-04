@@ -2,9 +2,9 @@ package com.tanggo.fund.monitor.core.service;
 
 import com.tanggo.fund.monitor.core.entity.Alert;
 import com.tanggo.fund.monitor.core.entity.AlertRule;
-import com.tanggo.fund.monitor.core.repo.warningrule.AlertRepo;
-import com.tanggo.fund.monitor.core.repo.warningrule.AlertProcessRepo;
-import com.tanggo.fund.monitor.core.repo.warningrule.AlertRuleRepo;
+import com.tanggo.fund.monitor.core.extension.warningrule.AlertRepo;
+import com.tanggo.fund.monitor.core.extension.warningrule.AlertProcessRepo;
+import com.tanggo.fund.monitor.core.extension.warningrule.AlertRuleRepo;
 
 import java.util.List;
 

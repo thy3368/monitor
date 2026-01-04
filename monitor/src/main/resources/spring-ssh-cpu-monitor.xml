@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- ==================== SSH CPU监控器配置 ==================== -->
+
+    <!-- SSH连接通道 -->
+    <bean id="sshMetricRetrievalChannel" class="com.tanggo.fund.monitor.plugin.channel.SSHMetricRetrievalChannel"/>
+
+    <!-- SSH通道元数据配置 -->
+    <bean id="sshChannelMeta" class="com.tanggo.fund.monitor.core.entity.meta.ChannelMeta">
+        <property name="channelId" value="ssh_cpu_channel"/>
+        <property name="channelVersion" value="1.0"/>
+        <property name="extensions">
+            <map>
+                <!-- SSH连接信息 -->
+                <entry key="host" value="192.168.1.100"/>
+                <entry key="port" value="22"/>
+                <entry key="username" value="admin"/>
+                <entry key="password" value="password123"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- Top命令元数据配置 -->
+    <bean id="topCommandMeta" class="com.tanggo.fund.monitor.core.entity.meta.CommandMeta">
+        <property name="command" value="top -bn1 -d 1"/>
+        <property name="extensions">
+            <map>
+                <!-- 命令扩展属性 -->
+                <entry key="timeout" value="30"/>
+                <entry key="charset" value="UTF-8"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- Top CPU指标计算器 -->
+    <bean id="topCpuMetricCalculator" class="com.tanggo.fund.monitor.plugin.calculator.TopCpuMetricCalculator"/>
+
+    <!-- 指标计算器元数据配置 -->
+    <bean id="topCpuCalculatorMeta" class="com.tanggo.fund.monitor.core.entity.meta.MetricCalculatorMeta">
+        <property name="calculatorId" value="top_cpu_calculator"/>
+    </bean>
+
+    <!-- ==================== SSH内存监控器配置 ==================== -->
+
+    <!-- Free命令元数据配置 -->
+    <bean id="freeCommandMeta" class="com.tanggo.fund.monitor.core.entity.meta.CommandMeta">
+        <property name="command" value="free -h"/>
+        <property name="extensions">
+            <map>
+                <!-- 命令扩展属性 -->
+                <entry key="timeout" value="30"/>
+                <entry key="charset" value="UTF-8"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- Free内存指标计算器 -->
+    <bean id="freeMemoryMetricCalculator" class="com.tanggo.fund.monitor.plugin.calculator.FreeMemoryMetricCalculator"/>
+
+    <!-- 内存指标计算器元数据配置 -->
+    <bean id="memoryCalculatorMeta" class="com.tanggo.fund.monitor.core.entity.meta.MetricCalculatorMeta">
+        <property name="calculatorId" value="memory_calculator"/>
+    </bean>
+
+    <!-- SSH方式采集内存使用率的完整配置 -->
+    <bean id="sshMemoryMetricRetrievalMeta" class="com.tanggo.fund.monitor.core.entity.meta.MetricRetrievalMeta">
+        <property name="monitorId" value="ssh_memory_monitor"/>
+        <property name="channelMeta" ref="sshChannelMeta"/>
+        <property name="commandMeta" ref="freeCommandMeta"/>
+        <property name="metricCalculatorMeta" ref="memoryCalculatorMeta"/>
+    </bean>
+
+    <!-- ==================== 指标检索元数据配置 ==================== -->
+
+    <!-- SSH方式采集CPU使用率的完整配置 -->
+    <bean id="sshCpuMetricRetrievalMeta" class="com.tanggo.fund.monitor.core.entity.meta.MetricRetrievalMeta">
+        <property name="monitorId" value="ssh_cpu_monitor"/>
+        <property name="channelMeta" ref="sshChannelMeta"/>
+        <property name="commandMeta" ref="topCommandMeta"/>
+        <property name="metricCalculatorMeta" ref="topCpuCalculatorMeta"/>
+    </bean>
+
+    <!-- ==================== 仓储配置（模拟实现） ==================== -->
+
+    <!-- 指标检索通道仓储 - 返回SSH通道 -->
+    <bean id="metricRetrievalChannelRepo" class="com.tanggo.fund.monitor.plugin.repo.InMemoryMetricRetrievalChannelRepo">
+        <constructor-arg>
+            <map>
+                <entry key="ssh_cpu_channel" value-ref="sshMetricRetrievalChannel"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <!-- 指标计算器仓储 - 返回Top CPU计算器和内存计算器 -->
+    <bean id="metricCalculatorRepo" class="com.tanggo.fund.monitor.plugin.repo.InMemoryMetricCalculatorRepo">
+        <constructor-arg>
+            <map>
+                <entry key="top_cpu_calculator" value-ref="topCpuMetricCalculator"/>
+                <entry key="memory_calculator" value-ref="freeMemoryMetricCalculator"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <!-- 指标持久化仓储（日志实现） -->
+    <bean id="metricPersistRepo" class="com.tanggo.fund.monitor.plugin.repo.LogMetricPersistRepo"/>
+
+    <!-- 指标检索元数据仓储 -->
+    <bean id="metricRetrievalMetaRepo" class="com.tanggo.fund.monitor.plugin.repo.InMemoryMetricRetrievalMetaRepo">
+        <constructor-arg>
+            <map>
+                <entry key="ssh_cpu_monitor" value-ref="sshCpuMetricRetrievalMeta"/>
+                <entry key="ssh_memory_monitor" value-ref="sshMemoryMetricRetrievalMeta"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <!-- ==================== 核心服务配置 ==================== -->
+
+    <!-- 收集器模板 -->
+    <bean id="collectorTemplate" class="com.tanggo.fund.monitor.core.service.CollectorTemplate">
+        <property name="monitorChannelRepo" ref="metricRetrievalChannelRepo"/>
+        <property name="metricCalculatorRepo" ref="metricCalculatorRepo"/>
+        <property name="metricPersistRepo" ref="metricPersistRepo"/>
+    </bean>
+
+    <!-- 指标收集服务 -->
+    <bean id="metricCollectorService" class="com.tanggo.fund.monitor.core.service.MetricCollectorService">
+        <property name="collectorTemplate" ref="collectorTemplate"/>
+        <property name="metricRetrievalMetaRepo" ref="metricRetrievalMetaRepo"/>
+    </bean>
+
+</beans>

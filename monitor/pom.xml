@@ -45,6 +45,30 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- SSH连接库 -->
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.55</version>
+        </dependency>
+        <!-- 数据解析库 -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>32.1.2-jre</version>
+        </dependency>
+        <!-- MySQL驱动 -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>
+        </dependency>
+        <!-- HikariCP连接池 -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.0.1</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,4 +1,4 @@
-package com.tanggo.fund.monitor.core.repo.collector;
+package com.tanggo.fund.monitor.core.extension.collector;
 
 import com.tanggo.fund.monitor.core.entity.meta.MetricRetrievalMeta;
 

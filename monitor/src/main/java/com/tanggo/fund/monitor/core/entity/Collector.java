@@ -4,5 +4,5 @@ import com.tanggo.fund.monitor.core.entity.meta.MetricRetrievalMeta;
 
 public interface Collector {
 
-    void meterRetrieval(MetricRetrievalMeta esbMetricRetrievalMeta);
+    void retrieval(MetricRetrievalMeta esbMetricRetrievalMeta);
 }

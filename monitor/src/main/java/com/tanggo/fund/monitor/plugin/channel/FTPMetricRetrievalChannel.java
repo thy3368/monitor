@@ -1,10 +1,10 @@
-package com.tanggo.fund.monitor.adapter.channel;
+package com.tanggo.fund.monitor.plugin.channel;
 
 import com.tanggo.fund.monitor.core.entity.MetricRetrievalChannel;
 import com.tanggo.fund.monitor.core.entity.meta.ChannelMeta;
 import com.tanggo.fund.monitor.core.entity.meta.CommandMeta;
 
-public class SSHMetricRetrievalChannel implements MetricRetrievalChannel {
+public class FTPMetricRetrievalChannel implements MetricRetrievalChannel {
 
 
     @Override
