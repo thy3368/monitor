@@ -12,7 +12,7 @@ import com.tanggo.fund.monitor.core.repo.collector.MeterCalculatorRepo;
 import com.tanggo.fund.monitor.core.repo.collector.MeterPersistRepo;
 import com.tanggo.fund.monitor.core.repo.collector.MeterRetrievalChannelRepo;
 
-public class CommonCollector implements Collector {
+public class CollectorTemplate implements Collector {
 
     private MeterRetrievalChannelRepo monitorChannelRepo;
 

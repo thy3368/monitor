@@ -5,7 +5,7 @@ import com.tanggo.fund.monitor.core.repo.collector.CollectorRepo;
 import com.tanggo.fund.monitor.core.repo.collector.MeterRetrievalMetaRepo;
 
 //执行选中的monitor
-public class MonitorProcess {
+public class CollectorService {
 
 
     private CollectorRepo collectorRepo;
@@ -16,14 +16,9 @@ public class MonitorProcess {
 
         MeterRetrievalMeta meta = meterRetrievalMetaRepo.queryById("esb_moni");
 
-        CommonCollector commonCollector = new CommonCollector();
+        CollectorTemplate collectorTemplate = new CollectorTemplate();
 
-        commonCollector.meterRetrieval(meta);
-
-
-//        Collector collector = monitorRepo.queryById(meta.getMonitorId());
-//
-//        collector.meterRetrieval(meta);
+        collectorTemplate.meterRetrieval(meta);
 
 
     }
