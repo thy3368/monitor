@@ -18,7 +18,7 @@ public class AlertRuleService {
     private AlertProcessRepo alertProcessRepo;
 
 
-    public void processWarningRule() {
+    public void processAlertRule() {
 
         //获取所有规则
         List<AlertRule> alertRuleList = alertRuleRepo.loadAll();
