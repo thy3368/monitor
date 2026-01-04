@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
-public class Meter {
+public class Metric {
     private String meterId;           // 指标ID
     private LocalDateTime timestamp;   // 采集时间
     private String metricName;        // 指标名称

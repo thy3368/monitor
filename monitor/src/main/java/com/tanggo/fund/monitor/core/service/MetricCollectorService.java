@@ -1,20 +1,20 @@
 package com.tanggo.fund.monitor.core.service;
 
-import com.tanggo.fund.monitor.core.entity.meta.MeterRetrievalMeta;
+import com.tanggo.fund.monitor.core.entity.meta.MetricRetrievalMeta;
 import com.tanggo.fund.monitor.core.repo.collector.CollectorRepo;
-import com.tanggo.fund.monitor.core.repo.collector.MeterRetrievalMetaRepo;
+import com.tanggo.fund.monitor.core.repo.collector.MetricRetrievalMetaRepo;
 
 //执行选中的monitor
-public class CollectorService {
+public class MetricCollectorService {
 
 
     private CollectorRepo collectorRepo;
 
-    private MeterRetrievalMetaRepo meterRetrievalMetaRepo;
+    private MetricRetrievalMetaRepo metricRetrievalMetaRepo;
 
     public void handle(String monitorId) {
 
-        MeterRetrievalMeta meta = meterRetrievalMetaRepo.queryById("esb_moni");
+        MetricRetrievalMeta meta = metricRetrievalMetaRepo.queryById("esb_moni");
 
         CollectorTemplate collectorTemplate = new CollectorTemplate();
 

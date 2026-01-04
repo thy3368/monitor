@@ -92,7 +92,7 @@ Monitor 是监控系统的基础单元，负责编排整个监控执行流程。
 
 ```java
 public interface Monitor {
-    void execution(MonitorMeta esbMeterRetrievalMeta);
+    void execution(MonitorMeta esbMetricRetrievalMeta);
 }
 ```
 
@@ -107,7 +107,7 @@ Monitor 通过元数据来描述其配置和执行属性，支持灵活的扩展
 public class MonitorMeta {
     private ChannelMeta channelMeta;           // 通道元数据
     private CommandMeta commandMeta;           // 命令元数据
-    private MeterCalculatorMeta meterCalculatorMeta;  // 计算器元数据
+    private MeterCalculatorMeta metricCalculatorMeta;  // 计算器元数据
 }
 ```
 
@@ -201,25 +201,25 @@ public class CommonMonitor implements Monitor {
     @Override
     public void execution(MonitorMeta monitorMeta) {
         // 1. 获取通道并建立连接
-        MonitorChannel meterRetrievalChannel = monitorChannelRepo
+        MonitorChannel metricRetrievalChannel = monitorChannelRepo
             .queryByChannelId(monitorMeta.getChannelMeta().getChannelId());
-        meterRetrievalChannel.connect(monitorMeta.getChannelMeta());
+        metricRetrievalChannel.connect(monitorMeta.getChannelMeta());
 
         // 2. 执行命令
-        String content = meterRetrievalChannel.execute(monitorMeta.getCommandMeta());
+        String content = metricRetrievalChannel.execute(monitorMeta.getCommandMeta());
 
         // 3. 获取计算器并解析数据
-        MeterCalculator meterCalculator = meterCalculatorRepo
+        MeterCalculator metricCalculator = meterCalculatorRepo
             .queryById(monitorMeta.getMeterCalculatorMeta().getCalculatorId());
-        Meter meter = meterCalculator.calculat(content);
+        Meter metric = metricCalculator.calculat(content);
 
         // 4. 告警处理与动作执行
-        Action alert = warningProcessRepo.handle(meter);
+        Action alert = warningProcessRepo.handle(metric);
         ActionHandle actionHandle = actionHandleRepo.queryByAction(alert.getId());
         actionHandle.execute();
 
         // 5. 数据持久化
-        meterPersistRepo.insert(meter);
+        meterPersistRepo.insert(metric);
     }
 }
 ```
@@ -691,21 +691,21 @@ public class EsbMonitor implements Monitor {
     @Override
     public void execution() {
         // 1. 获取并连接监控通道
-        MonitorChannel meterRetrievalChannel = monitorChannelRepo.queryByChannelId("channelid");
-        meterRetrievalChannel.connect();
-        String content = meterRetrievalChannel.execute("cmd");
+        MonitorChannel metricRetrievalChannel = monitorChannelRepo.queryByChannelId("channelid");
+        metricRetrievalChannel.connect();
+        String content = metricRetrievalChannel.execute("cmd");
 
         // 2. 获取计算器并解析数据
-        MonitorCalculator meterCalculator = monitorCalculatorRepo.queryById("calculator");
-        Meter meter = meterCalculator.calculat(content);
+        MonitorCalculator metricCalculator = monitorCalculatorRepo.queryById("calculator");
+        Meter metric = metricCalculator.calculat(content);
 
         // 3. 处理告警并执行动作
-        Action alert = warningProcessRepo.handle(meter);
+        Action alert = warningProcessRepo.handle(metric);
         ActionHandle actionHandle = actionHandleRepo.queryByAction(alert.getId());
         actionHandle.execute();
 
         // 4. 持久化指标数据
-        meterPersisRepo.insert(meter);
+        meterPersisRepo.insert(metric);
     }
 }
 ```

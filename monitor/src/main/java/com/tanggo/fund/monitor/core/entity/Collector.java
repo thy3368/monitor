@@ -1,8 +1,8 @@
 package com.tanggo.fund.monitor.core.entity;
 
-import com.tanggo.fund.monitor.core.entity.meta.MeterRetrievalMeta;
+import com.tanggo.fund.monitor.core.entity.meta.MetricRetrievalMeta;
 
 public interface Collector {
 
-    void meterRetrieval(MeterRetrievalMeta esbMeterRetrievalMeta);
+    void meterRetrieval(MetricRetrievalMeta esbMetricRetrievalMeta);
 }
