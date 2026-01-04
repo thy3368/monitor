@@ -1,4 +1,4 @@
-package com.tanggo.fund.monitor.core.extension.warningrule;
+package com.tanggo.fund.monitor.core.extension.alert;
 
 import com.tanggo.fund.monitor.core.entity.Alert;
 
