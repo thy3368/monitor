@@ -1,10 +1,10 @@
 package com.tanggo.fund.monitor.adapter.channel;
 
-import com.tanggo.fund.monitor.core.entity.MonitorChannel;
+import com.tanggo.fund.monitor.core.entity.MeterRetrievalChannel;
 import com.tanggo.fund.monitor.core.entity.meta.ChannelMeta;
 import com.tanggo.fund.monitor.core.entity.meta.CommandMeta;
 
-public class SSHMonitorChannel implements MonitorChannel {
+public class SSHMeterRetrievalChannel implements MeterRetrievalChannel {
 
 
     @Override

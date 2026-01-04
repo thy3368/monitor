@@ -24,12 +24,12 @@ Monitor 框架是一个企业级监控解决方案，专注于以下核心能力
 ## 项目结构
 
 ```
-monitor/
+collector/
 ├── pom.xml                              # Maven 项目配置
 ├── .mvn/                                # Maven Wrapper
 ├── src/
 │   ├── main/
-│   │   ├── java/com/tanggo/fund/monitor/
+│   │   ├── java/com/tanggo/fund/collector/
 │   │   │   ├── core/                    # 核心领域层
 │   │   │   │   ├── entity/              # 领域实体
 │   │   │   │   │   ├── Monitor.java     # 监控器接口
@@ -56,7 +56,7 @@ monitor/
 │   │   │   │   │   └── RestMonitorChannel.java     # REST 通道
 │   │   │   │   ├── template/            # 监控器模板实现
 │   │   │   │   │   └── CommonMonitor.java          # 通用监控器
-│   │   │   │   ├── monitor/             # 监控器实现
+│   │   │   │   ├── collector/             # 监控器实现
 │   │   │   │   │   └── ActionHandleRepo.java       # 动作处理器
 │   │   │   │   └── meterpersisrepo/     # 持久化实现
 │   │   │   │       └── MysqlMeterPersistRepo.java  # MySQL 持久化
@@ -66,7 +66,7 @@ monitor/
 │   │   └── resources/
 │   │       └── application.properties   # 应用配置
 │   └── test/
-│       └── java/com/tanggo/fund/monitor/
+│       └── java/com/tanggo/fund/collector/
 │           └── MonitorApplicationTests.java  # 测试代码
 └── README.md                            # 项目说明文档
 ```
@@ -80,7 +80,7 @@ monitor/
 | `core/repo` | 仓储接口，定义数据访问契约 |
 | `adapter/channel` | 多种通道实现（SSH、FTP、REST 等） |
 | `adapter/template` | 监控器模板类（CommonMonitor） |
-| `adapter/monitor` | 具体的监控器实现和相关处理器 |
+| `adapter/collector` | 具体的监控器实现和相关处理器 |
 | `adapter/meterpersisrepo` | 数据持久化实现（MySQL 等） |
 | `example` | 使用示例代码 |
 
@@ -92,7 +92,7 @@ Monitor 是监控系统的基础单元，负责编排整个监控执行流程。
 
 ```java
 public interface Monitor {
-    void execution(MonitorMeta esbMonitorMeta);
+    void execution(MonitorMeta esbMeterRetrievalMeta);
 }
 ```
 
@@ -201,12 +201,12 @@ public class CommonMonitor implements Monitor {
     @Override
     public void execution(MonitorMeta monitorMeta) {
         // 1. 获取通道并建立连接
-        MonitorChannel monitorChannel = monitorChannelRepo
+        MonitorChannel meterRetrievalChannel = monitorChannelRepo
             .queryByChannelId(monitorMeta.getChannelMeta().getChannelId());
-        monitorChannel.connect(monitorMeta.getChannelMeta());
+        meterRetrievalChannel.connect(monitorMeta.getChannelMeta());
 
         // 2. 执行命令
-        String content = monitorChannel.execute(monitorMeta.getCommandMeta());
+        String content = meterRetrievalChannel.execute(monitorMeta.getCommandMeta());
 
         // 3. 获取计算器并解析数据
         MeterCalculator meterCalculator = meterCalculatorRepo
@@ -214,8 +214,8 @@ public class CommonMonitor implements Monitor {
         Meter meter = meterCalculator.calculat(content);
 
         // 4. 告警处理与动作执行
-        Action action = warningProcessRepo.handle(meter);
-        ActionHandle actionHandle = actionHandleRepo.queryByAction(action.getId());
+        Action alert = warningProcessRepo.handle(meter);
+        ActionHandle actionHandle = actionHandleRepo.queryByAction(alert.getId());
         actionHandle.execute();
 
         // 5. 数据持久化
@@ -241,10 +241,10 @@ public class MonitorProcess {
         MonitorMeta meta = monitorMetaRepo.queryById(monitorId);
 
         // 2. 根据元数据中的监控实现ID获取Monitor实例
-        Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
+        Monitor collector = monitorRepo.queryById(meta.getMonitorId());
 
         // 3. 执行监控任务
-        monitor.execution(meta);
+        collector.execution(meta);
     }
 
     void test() {
@@ -278,10 +278,10 @@ public class SystemPerformanceMonitorProcess {
         channelMeta.getExtensions().put("timeout", 30000);  // 30秒超时
 
         // 3. 获取系统性能监控器
-        Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
+        Monitor collector = monitorRepo.queryById(meta.getMonitorId());
 
         // 4. 执行监控
-        monitor.execution(meta);
+        collector.execution(meta);
     }
 
     void test() {
@@ -332,8 +332,8 @@ public class ApplicationLogMonitorProcess {
         calculatorMeta.getExtensions().put("aggregationWindow", 300000);  // 5分钟窗口
 
         // 5. 执行监控
-        Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
-        monitor.execution(meta);
+        Monitor collector = monitorRepo.queryById(meta.getMonitorId());
+        collector.execution(meta);
     }
 
     void test() {
@@ -387,8 +387,8 @@ public class DatabasePerformanceMonitorProcess {
                 calculatorMeta.getExtensions().put("threshold", 1000);  // 查询时间阈值(ms)
 
                 // 5. 执行监控
-                Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
-                monitor.execution(meta);
+                Monitor collector = monitorRepo.queryById(meta.getMonitorId());
+                collector.execution(meta);
 
                 System.out.println("数据库监控成功: " + databaseName);
                 return;  // 成功则返回
@@ -467,8 +467,8 @@ public class BatchMonitorProcess {
 
     private void executeSingleMonitor(String monitorId) {
         MonitorMeta meta = monitorMetaRepo.queryById(monitorId);
-        Monitor monitor = monitorRepo.queryById(meta.getMonitorId());
-        monitor.execution(meta);
+        Monitor collector = monitorRepo.queryById(meta.getMonitorId());
+        collector.execution(meta);
     }
 
     public void shutdownExecutor() {
@@ -534,8 +534,8 @@ public class DynamicMonitorProcess {
         meta.setMeterCalculatorMeta(calculatorMeta);
 
         // 5. 获取监控器并执行
-        Monitor monitor = monitorRepo.queryById(config.getMonitorType());
-        monitor.execution(meta);
+        Monitor collector = monitorRepo.queryById(config.getMonitorType());
+        collector.execution(meta);
     }
 
     // 监控配置类
@@ -618,7 +618,7 @@ public interface MonitorChannel {
 ```bash
 # 克隆项目
 git clone <repository-url>
-cd monitor
+cd collector
 
 # 编译项目
 mvn clean install
@@ -637,7 +637,7 @@ mvn package
 mvn spring-boot:run
 
 # 方式2: 运行 JAR 包
-java -jar target/monitor-0.0.1-SNAPSHOT.jar
+java -jar target/collector-0.0.1-SNAPSHOT.jar
 ```
 
 ## 使用示例
@@ -646,8 +646,8 @@ java -jar target/monitor-0.0.1-SNAPSHOT.jar
 
 ```java
 // 获取监控器并执行
-Monitor monitor = monitorRepo.queryById("user1");
-monitor.execution();
+Monitor collector = monitorRepo.queryById("user1");
+collector.execution();
 ```
 
 ### 扩展自定义监控器
@@ -691,17 +691,17 @@ public class EsbMonitor implements Monitor {
     @Override
     public void execution() {
         // 1. 获取并连接监控通道
-        MonitorChannel monitorChannel = monitorChannelRepo.queryByChannelId("channelid");
-        monitorChannel.connect();
-        String content = monitorChannel.execute("cmd");
+        MonitorChannel meterRetrievalChannel = monitorChannelRepo.queryByChannelId("channelid");
+        meterRetrievalChannel.connect();
+        String content = meterRetrievalChannel.execute("cmd");
 
         // 2. 获取计算器并解析数据
         MonitorCalculator meterCalculator = monitorCalculatorRepo.queryById("calculator");
         Meter meter = meterCalculator.calculat(content);
 
         // 3. 处理告警并执行动作
-        Action action = warningProcessRepo.handle(meter);
-        ActionHandle actionHandle = actionHandleRepo.queryByAction(action.getId());
+        Action alert = warningProcessRepo.handle(meter);
+        ActionHandle actionHandle = actionHandleRepo.queryByAction(alert.getId());
         actionHandle.execute();
 
         // 4. 持久化指标数据
@@ -733,13 +733,13 @@ public class MonitorConfig {
         WarningProcessRepo warningRepo,
         ActionHandleRepo actionRepo
     ) {
-        EsbMonitor monitor = new EsbMonitor();
-        monitor.setMonitorChannelRepo(channelRepo);
-        monitor.setMonitorCalculatorRepo(calculatorRepo);
-        monitor.setMeterPersisRepo(meterRepo);
-        monitor.setWarningProcessRepo(warningRepo);
-        monitor.setActionHandleRepo(actionRepo);
-        return monitor;
+        EsbMonitor collector = new EsbMonitor();
+        collector.setMonitorChannelRepo(channelRepo);
+        collector.setMonitorCalculatorRepo(calculatorRepo);
+        collector.setMeterPersisRepo(meterRepo);
+        collector.setWarningProcessRepo(warningRepo);
+        collector.setActionHandleRepo(actionRepo);
+        return collector;
     }
 }
 ```
@@ -798,7 +798,7 @@ public class MonitorConfig {
 
 #### 3. Interface Adapters Layer (适配层)
 具体技术实现和数据格式转换：
-- **monitor package**: 各种 Monitor 实现（EsbMonitor 等）
+- **collector package**: 各种 Monitor 实现（EsbMonitor 等）
 - **channel package**: 各种通道实现（SSH、本地 Shell 等）
 - **meterpersisrepo package**: 数据库适配实现
 - 数据格式转换和外部系统集成
@@ -836,12 +836,12 @@ public class MonitorConfig {
 
 ```properties
 # 应用配置
-spring.application.name=monitor
+spring.application.name=collector
 server.port=8080
 
 # 监控相关配置
-monitor.enabled=true
-monitor.execution-interval=5000  # 毫秒
+collector.enabled=true
+collector.execution-interval=5000  # 毫秒
 ```
 
 ### 数据库配置
@@ -874,7 +874,7 @@ ssh.connection-timeout=10000  # 毫秒
 
 ```bash
 # 推荐的生产环境参数
-java -jar monitor.jar \
+java -jar collector.jar \
   -XX:+UseG1GC \
   -XX:MaxGCPauseMillis=1 \
   -XX:+AlwaysPreTouch \
@@ -890,7 +890,7 @@ java -jar monitor.jar \
 
 ### 添加新的监控器
 
-在 `adapter/monitor` 目录下创建新的监控器实现，并通过依赖注入配置。
+在 `adapter/collector` 目录下创建新的监控器实现，并通过依赖注入配置。
 
 ### 添加新的通道
 

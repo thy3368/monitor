@@ -3,7 +3,7 @@ package com.tanggo.fund.monitor.core.entity.meta;
 import lombok.Data;
 
 @Data
-public class MonitorMeta {
+public class MeterRetrievalMeta {
 
     private String monitorId;
     private ChannelMeta channelMeta;

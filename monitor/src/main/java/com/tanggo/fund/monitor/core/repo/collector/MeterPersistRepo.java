@@ -1,4 +1,4 @@
-package com.tanggo.fund.monitor.core.repo;
+package com.tanggo.fund.monitor.core.repo.collector;
 
 import com.tanggo.fund.monitor.core.entity.Meter;
 
