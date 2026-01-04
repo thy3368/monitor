@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- ==================== MySQL数据源配置 ==================== -->
+
+    <!-- HikariCP数据源 - MySQL连接池 -->
+    <bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
+        <!-- 数据库连接信息 -->
+        <property name="jdbcUrl"
+                  value="jdbc:mysql://localhost:3306/monitor_db?useSSL=false&amp;serverTimezone=UTC&amp;characterEncoding=utf8mb4"/>
+        <property name="username" value="root"/>
+        <property name="password" value="password"/>
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+
+        <!-- 连接池配置 -->
+        <property name="maximumPoolSize" value="10"/>
+        <property name="minimumIdle" value="5"/>
+        <property name="connectionTimeout" value="30000"/>
+        <property name="idleTimeout" value="600000"/>
+        <property name="maxLifetime" value="1800000"/>
+        <property name="autoCommit" value="true"/>
+        <property name="poolName" value="MonitorHikariPool"/>
+    </bean>
+
+    <!-- HikariCP数据源 -->
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
+        <constructor-arg ref="hikariConfig"/>
+    </bean>
+
+    <!-- ==================== MySQL持久化仓储配置 ==================== -->
+
+    <!-- MySQL度量持久化实现 -->
+    <bean id="mysqlMetricPersistRepo" class="com.tanggo.fund.monitor.plugin.repo.MysqlMetricPersistRepo">
+        <constructor-arg ref="dataSource"/>
+    </bean>
+
+</beans>
