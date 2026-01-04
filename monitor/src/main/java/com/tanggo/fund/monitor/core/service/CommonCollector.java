@@ -10,11 +10,11 @@ import com.tanggo.fund.monitor.core.entity.meta.MeterCalculatorMeta;
 import com.tanggo.fund.monitor.core.entity.meta.MeterRetrievalMeta;
 import com.tanggo.fund.monitor.core.repo.collector.MeterCalculatorRepo;
 import com.tanggo.fund.monitor.core.repo.collector.MeterPersistRepo;
-import com.tanggo.fund.monitor.core.repo.collector.MonitorChannelRepo;
+import com.tanggo.fund.monitor.core.repo.collector.MeterRetrievalChannelRepo;
 
 public class CommonCollector implements Collector {
 
-    private MonitorChannelRepo monitorChannelRepo;
+    private MeterRetrievalChannelRepo monitorChannelRepo;
 
     private MeterCalculatorRepo meterCalculatorRepo;
 
