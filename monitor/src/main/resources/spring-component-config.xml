@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- ==================== 指标检索通道 ==================== -->
+
+    <!-- SSH远程执行通道 -->
+    <bean id="sshMetricRetrievalChannel" class="com.tanggo.fund.monitor.plugin.channel.SSHMetricRetrievalChannel"/>
+
+    <!-- ==================== 指标计算器 ==================== -->
+
+    <!-- Top命令CPU使用率计算器 -->
+    <bean id="topCpuMetricCalculator" class="com.tanggo.fund.monitor.plugin.calculator.TopCpuMetricCalculator"/>
+
+    <!-- Free命令内存使用率计算器 -->
+    <bean id="freeMemoryMetricCalculator" class="com.tanggo.fund.monitor.plugin.calculator.FreeMemoryMetricCalculator"/>
+
+</beans>

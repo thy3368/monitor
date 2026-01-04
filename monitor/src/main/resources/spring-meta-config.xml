@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- ==================== SSH通道元数据配置 ==================== -->
+
+    <!-- SSH连接通道元数据 -->
+    <bean id="sshChannelMeta" class="com.tanggo.fund.monitor.core.entity.meta.ChannelMeta">
+        <property name="channelId" value="ssh_cpu_channel"/>
+        <property name="channelVersion" value="1.0"/>
+        <property name="extensions">
+            <map>
+                <!-- SSH连接信息 - 需要修改为实际的服务器地址和凭证 -->
+                <entry key="host" value="192.168.1.100"/>
+                <entry key="port" value="22"/>
+                <entry key="username" value="admin"/>
+                <entry key="password" value="password123"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- ==================== CPU监控元数据配置 ==================== -->
+
+    <!-- Top命令元数据 -->
+    <bean id="topCommandMeta" class="com.tanggo.fund.monitor.core.entity.meta.CommandMeta">
+        <property name="command" value="top -bn1 -d 1"/>
+        <property name="extensions">
+            <map>
+                <entry key="timeout" value="30"/>
+                <entry key="charset" value="UTF-8"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- Top CPU计算器元数据 -->
+    <bean id="topCpuCalculatorMeta" class="com.tanggo.fund.monitor.core.entity.meta.MetricCalculatorMeta">
+        <property name="calculatorId" value="top_cpu_calculator"/>
+    </bean>
+
+    <!-- SSH CPU监控完整配置（组合ChannelMeta + CommandMeta + CalculatorMeta） -->
+    <bean id="sshCpuMetricRetrievalMeta" class="com.tanggo.fund.monitor.core.entity.meta.MetricRetrievalMeta">
+        <property name="monitorId" value="ssh_cpu_monitor"/>
+        <property name="channelMeta" ref="sshChannelMeta"/>
+        <property name="commandMeta" ref="topCommandMeta"/>
+        <property name="metricCalculatorMeta" ref="topCpuCalculatorMeta"/>
+    </bean>
+
+    <!-- ==================== 内存监控元数据配置 ==================== -->
+
+    <!-- Free命令元数据 -->
+    <bean id="freeCommandMeta" class="com.tanggo.fund.monitor.core.entity.meta.CommandMeta">
+        <property name="command" value="free -h"/>
+        <property name="extensions">
+            <map>
+                <entry key="timeout" value="30"/>
+                <entry key="charset" value="UTF-8"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- 内存计算器元数据 -->
+    <bean id="memoryCalculatorMeta" class="com.tanggo.fund.monitor.core.entity.meta.MetricCalculatorMeta">
+        <property name="calculatorId" value="memory_calculator"/>
+    </bean>
+
+    <!-- SSH内存监控完整配置（组合ChannelMeta + CommandMeta + CalculatorMeta） -->
+    <bean id="sshMemoryMetricRetrievalMeta" class="com.tanggo.fund.monitor.core.entity.meta.MetricRetrievalMeta">
+        <property name="monitorId" value="ssh_memory_monitor"/>
+        <property name="channelMeta" ref="sshChannelMeta"/>
+        <property name="commandMeta" ref="freeCommandMeta"/>
+        <property name="metricCalculatorMeta" ref="memoryCalculatorMeta"/>
+    </bean>
+
+</beans>
