@@ -1,6 +1,6 @@
 package com.tanggo.fund.monitor.plugin.channel;
 
-import com.tanggo.fund.monitor.core.entity.MetricRetrievalChannel;
+import com.tanggo.fund.monitor.core.extension.MetricRetrievalChannel;
 import com.tanggo.fund.monitor.core.entity.meta.ChannelMeta;
 import com.tanggo.fund.monitor.core.entity.meta.CommandMeta;
 

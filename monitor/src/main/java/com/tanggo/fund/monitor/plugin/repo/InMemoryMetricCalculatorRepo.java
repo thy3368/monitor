@@ -1,6 +1,6 @@
 package com.tanggo.fund.monitor.plugin.repo;
 
-import com.tanggo.fund.monitor.core.entity.MetricCalculator;
+import com.tanggo.fund.monitor.core.extension.MetricCalculator;
 import com.tanggo.fund.monitor.core.extension.collector.MetricCalculatorRepo;
 import lombok.AllArgsConstructor;
 

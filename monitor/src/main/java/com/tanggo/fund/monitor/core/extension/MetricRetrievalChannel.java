@@ -1,4 +1,4 @@
-package com.tanggo.fund.monitor.core.entity;
+package com.tanggo.fund.monitor.core.extension;
 
 import com.tanggo.fund.monitor.core.entity.meta.ChannelMeta;
 import com.tanggo.fund.monitor.core.entity.meta.CommandMeta;

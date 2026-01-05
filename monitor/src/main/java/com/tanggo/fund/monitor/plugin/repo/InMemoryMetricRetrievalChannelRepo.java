@@ -1,6 +1,6 @@
 package com.tanggo.fund.monitor.plugin.repo;
 
-import com.tanggo.fund.monitor.core.entity.MetricRetrievalChannel;
+import com.tanggo.fund.monitor.core.extension.MetricRetrievalChannel;
 import com.tanggo.fund.monitor.core.extension.collector.MetricRetrievalChannelRepo;
 import lombok.AllArgsConstructor;
 

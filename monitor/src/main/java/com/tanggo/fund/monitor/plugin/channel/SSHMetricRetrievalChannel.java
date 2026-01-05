@@ -4,7 +4,7 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.tanggo.fund.monitor.core.entity.MetricRetrievalChannel;
+import com.tanggo.fund.monitor.core.extension.MetricRetrievalChannel;
 import com.tanggo.fund.monitor.core.entity.meta.ChannelMeta;
 import com.tanggo.fund.monitor.core.entity.meta.CommandMeta;
 import lombok.extern.slf4j.Slf4j;

@@ -74,3 +74,4 @@ public class MysqlMetricPersistRepo implements MetricPersistRepo {
         this.dataSource = dataSource;
     }
 }
+

@@ -1,7 +1,7 @@
 package com.tanggo.fund.monitor.plugin.calculator;
 
 import com.tanggo.fund.monitor.core.entity.Metric;
-import com.tanggo.fund.monitor.core.entity.MetricCalculator;
+import com.tanggo.fund.monitor.core.extension.MetricCalculator;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 public class FreeMemoryMetricCalculator implements MetricCalculator {
 
     @Override
-    public Metric calculat(String freeOutput) {
+    public Metric calculate(String freeOutput) {
         try {
             log.debug("解析free命令输出: {}", freeOutput);
             Map<String, Double> metrics = parseMemoryOutput(freeOutput);

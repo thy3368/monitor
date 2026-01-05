@@ -2,8 +2,8 @@ package com.tanggo.fund.monitor.core.service;
 
 import com.tanggo.fund.monitor.core.entity.Collector;
 import com.tanggo.fund.monitor.core.entity.Metric;
-import com.tanggo.fund.monitor.core.entity.MetricCalculator;
-import com.tanggo.fund.monitor.core.entity.MetricRetrievalChannel;
+import com.tanggo.fund.monitor.core.extension.MetricCalculator;
+import com.tanggo.fund.monitor.core.extension.MetricRetrievalChannel;
 import com.tanggo.fund.monitor.core.entity.meta.ChannelMeta;
 import com.tanggo.fund.monitor.core.entity.meta.CommandMeta;
 import com.tanggo.fund.monitor.core.entity.meta.MetricCalculatorMeta;
@@ -80,7 +80,7 @@ public class CollectorTemplate implements Collector {
 
             //数据解析并计算
             log.debug("开始数据解析和计算");
-            Metric metric = metricCalculator.calculat(content);
+            Metric metric = metricCalculator.calculate(content);
 
             //入库
             log.debug("保存指标数据");
